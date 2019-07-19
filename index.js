@@ -4,13 +4,14 @@ const cheerio = require("cheerio");
 const app = express();
 
 app.get("/", (req, res) => {
-	if (!req.query.type) throw new Error("No type provided");
+	if (!req.query.category) throw new Error("No category provided");
 
-	let type = req.query.type.toLowerCase();
+	let category = req.query.category.toLowerCase();
 
 	var url;
 
-	if (type === "tech") url = "https://www.etsy.com/uk/featured/tech-trends-uk";
+	if (category === "tech")
+		url = "https://www.etsy.com/uk/featured/tech-trends-uk";
 
 	// The structure of our request call
 	// The first parameter is our URL
@@ -25,7 +26,7 @@ app.get("/", (req, res) => {
 			// We'll be using Cheerio's function to single out the necessary information
 			// using DOM selectors which are normally found in CSS.
 
-			if (type === "tech") {
+			if (category === "tech") {
 				const products = $(`a[href*="etsy.com/uk/listing"]`);
 				var prediction = $("div.daily-horoscope > p").text();
 				const foundProducts = [];
@@ -47,6 +48,7 @@ app.get("/", (req, res) => {
 					if (title !== "" && price !== "") {
 						foundProducts.push({
 							id,
+							category,
 							price,
 							title
 						});
