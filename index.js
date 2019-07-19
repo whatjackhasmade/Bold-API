@@ -1,5 +1,6 @@
 const express = require("express");
 const request = require("request");
+const rp = require("request-promise");
 const cheerio = require("cheerio");
 const slugify = require("slugify");
 const app = express();
@@ -31,7 +32,7 @@ app.get("/", (req, res) => {
 				const products = $(`a[href*="etsy.com/uk/listing"]`);
 				const foundProducts = [];
 
-				$(products).each(function(i, prod) {
+				$(products).each(async function(i, prod) {
 					const product = cheerio.load(prod);
 					const url = $(prod).attr("href");
 
@@ -39,15 +40,31 @@ app.get("/", (req, res) => {
 						Number(String(Math.random()).slice(2)) + Date.now()
 					).toString(36);
 
-					let price =
-						product(`.currency-symbol`).text() +
-						product(`.currency-value`).text();
+					const price = parseFloat(product(`.currency-value`).text()).toFixed(
+						2
+					);
 
 					let title = product(`h2`).text();
 					title = title.replace(/(\r\n|\n|\r)/gm, "");
 					title = title.trim();
 
 					const slug = slugify(title).toLowerCase();
+
+					// const images = await rp(url)
+					// 	.then(htmlString => {
+					// 		var $ = cheerio.load(htmlString);
+					// 		const carousel = $(`.listing-page-image-carousel-component`);
+					// 		let images = $(carousel).find(`.carousel-image`);
+					// 		const gallery = $(images).each(function(i, image) {
+					// 			return $(image).attr(`data-src`);
+					// 		});
+					// 		return gallery;
+					// 	})
+					// 	.catch(err => {
+					// 		console.log(err);
+					// 	});
+
+					// console.log(images);
 
 					if (title !== "" && price !== "") {
 						foundProducts.push({
