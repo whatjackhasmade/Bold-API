@@ -1,6 +1,7 @@
 const express = require("express");
 const request = require("request");
 const cheerio = require("cheerio");
+const slugify = require("slugify");
 const app = express();
 
 app.get("/", (req, res) => {
@@ -28,28 +29,31 @@ app.get("/", (req, res) => {
 
 			if (category === "tech") {
 				const products = $(`a[href*="etsy.com/uk/listing"]`);
-				var prediction = $("div.daily-horoscope > p").text();
 				const foundProducts = [];
 
 				$(products).each(function(i, headline) {
+					let product = cheerio.load(this);
+
 					const id = (
 						Number(String(Math.random()).slice(2)) + Date.now()
 					).toString(36);
 
-					let product = cheerio.load(this);
+					let price =
+						product(`.currency-symbol`).text() +
+						product(`.currency-value`).text();
+
 					let title = product(`h2`).text();
 					title = title.replace(/(\r\n|\n|\r)/gm, "");
 					title = title.trim();
 
-					let price =
-						product(`.currency-symbol`).text() +
-						product(`.currency-value`).text();
+					const slug = slugify(title).toLowerCase();
 
 					if (title !== "" && price !== "") {
 						foundProducts.push({
 							id,
 							category,
 							price,
+							slug,
 							title
 						});
 					}
