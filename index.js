@@ -31,6 +31,10 @@ app.get("/", (req, res) => {
 				const foundProducts = [];
 
 				$(products).each(function(i, headline) {
+					const id = (
+						Number(String(Math.random()).slice(2)) + Date.now()
+					).toString(36);
+
 					let product = cheerio.load(this);
 					let title = product(`h2`).text();
 					title = title.replace(/(\r\n|\n|\r)/gm, "");
@@ -42,6 +46,7 @@ app.get("/", (req, res) => {
 
 					if (title !== "" && price !== "") {
 						foundProducts.push({
+							id,
 							price,
 							title
 						});
