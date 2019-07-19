@@ -31,8 +31,9 @@ app.get("/", (req, res) => {
 				const products = $(`a[href*="etsy.com/uk/listing"]`);
 				const foundProducts = [];
 
-				$(products).each(function(i, headline) {
-					let product = cheerio.load(this);
+				$(products).each(function(i, prod) {
+					const product = cheerio.load(prod);
+					const url = $(prod).attr("href");
 
 					const id = (
 						Number(String(Math.random()).slice(2)) + Date.now()
@@ -54,7 +55,8 @@ app.get("/", (req, res) => {
 							category,
 							price,
 							slug,
-							title
+							title,
+							url
 						});
 					}
 				});
