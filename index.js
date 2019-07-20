@@ -36,13 +36,29 @@ app.get("/", (req, res) => {
 					const image = $(threadImage).attr(`src`);
 					const url = $(threadURL).attr(`href`);
 
+					let title = $(`.thread-title a`).text();
+					title = title.replace(/(\r\n|\n|\r)/gm, "");
+					title = title.trim();
+
+					const slug = url.replace(`https://www.hotukdeals.com/deals/`, ``);
+
+					const price = parseFloat(
+						$(`.thread-price`)
+							.text()
+							.replace(`£`, ``)
+					).toFixed(2);
+
 					const id = (
 						Number(String(Math.random()).slice(2)) + Date.now()
 					).toString(36);
 
 					foundProducts.push({
 						id,
+						category,
 						image,
+						price,
+						slug,
+						title,
 						url
 					});
 				});
