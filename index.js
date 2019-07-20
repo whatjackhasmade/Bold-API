@@ -14,6 +14,7 @@ app.get("/", (req, res) => {
 
 	if (category === "tech")
 		url = "https://www.etsy.com/uk/featured/tech-trends-uk";
+	if (category === "travel") url = "https://www.hotukdeals.com/tag/holiday";
 
 	// The structure of our request call
 	// The first parameter is our URL
@@ -23,6 +24,32 @@ app.get("/", (req, res) => {
 		if (!error) {
 			// Next, we'll utilize the cheerio library on the returned html which will essentially give us jQuery functionality
 			var $ = cheerio.load(html);
+
+			if (category === "travel") {
+				const products = $(`.thread--deal`);
+				const foundProducts = [];
+
+				$(products).each(async function(i, prod) {
+					const $ = cheerio.load(prod);
+					const threadURL = $(`.threadGrid-image a`);
+					const threadImage = $(`.threadGrid-image img`);
+					const image = $(threadImage).attr(`src`);
+					const url = $(threadURL).attr(`href`);
+
+					const id = (
+						Number(String(Math.random()).slice(2)) + Date.now()
+					).toString(36);
+
+					foundProducts.push({
+						id,
+						image,
+						url
+					});
+				});
+
+				// Send the JSON as a response to the client
+				res.send(foundProducts);
+			}
 
 			// Finally, we'll define the variable we're going to capture
 			// We'll be using Cheerio's function to single out the necessary information
@@ -34,7 +61,7 @@ app.get("/", (req, res) => {
 
 				$(products).each(async function(i, prod) {
 					const product = cheerio.load(prod);
-					const url = $(prod).attr("href");
+					const url = $(prod).attr(`href`);
 
 					const id = (
 						Number(String(Math.random()).slice(2)) + Date.now()
