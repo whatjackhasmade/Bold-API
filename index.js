@@ -66,7 +66,7 @@ app.get("/", (req, res) => {
 
 					// console.log(images);
 
-					if (title !== "" && price !== "") {
+					if (title !== "" && price !== "NaN") {
 						foundProducts.push({
 							id,
 							category,
