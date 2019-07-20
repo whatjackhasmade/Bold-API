@@ -12,18 +12,64 @@ app.get("/", (req, res) => {
 
 	var url;
 
+	if (category === "music")
+		url = "https://www.groupon.co.uk/vouchers/festivals";
 	if (category === "tech")
 		url = "https://www.etsy.com/uk/featured/tech-trends-uk";
 	if (category === "travel") url = "https://www.hotukdeals.com/tag/holiday";
 
-	// The structure of our request call
-	// The first parameter is our URL
-	// The callback function takes 3 parameters, an error, response status code and the html
 	request(url, (error, response, html) => {
-		// First we'll check to make sure no errors occurred when making the request
 		if (!error) {
-			// Next, we'll utilize the cheerio library on the returned html which will essentially give us jQuery functionality
 			var $ = cheerio.load(html);
+
+			if (category === "music") {
+				const products = $(`.deal-card`);
+				const foundProducts = [];
+
+				$(products).each(async function(i, prod) {
+					const $ = cheerio.load(prod);
+					const dealURL = $(`a.grpn-dc`);
+					const threadImage = $(`.grpn-dc-img img`);
+					const image = $(threadImage).attr(`src`);
+					const url = $(dealURL).attr(`href`);
+
+					let title = $(`.grpn-dc-title`).text();
+					title = title.replace(/(\r\n|\n|\r)/gm, "");
+					title = title.trim();
+
+					let description = $(`.fc-description p`).text();
+					description = description.replace(/(\r\n|\n|\r)/gm, "");
+					description = description.trim();
+
+					const slug = url.replace(`https://www.groupon.co.uk/deals/`, ``);
+
+					const discountObject = $(`.wh-dc-price-discount`).children();
+
+					const price = parseFloat(
+						$(`.wh-dc-price-discount`)
+							.text()
+							.replace(`£`, ``)
+					).toFixed(2);
+
+					const id = (
+						Number(String(Math.random()).slice(2)) + Date.now()
+					).toString(36);
+
+					foundProducts.push({
+						id,
+						category,
+						description,
+						image,
+						price,
+						slug,
+						title,
+						url
+					});
+				});
+
+				// Send the JSON as a response to the client
+				res.send(foundProducts);
+			}
 
 			if (category === "travel") {
 				const products = $(`.thread--deal`);
@@ -66,10 +112,6 @@ app.get("/", (req, res) => {
 				// Send the JSON as a response to the client
 				res.send(foundProducts);
 			}
-
-			// Finally, we'll define the variable we're going to capture
-			// We'll be using Cheerio's function to single out the necessary information
-			// using DOM selectors which are normally found in CSS.
 
 			if (category === "tech") {
 				const products = $(`a[href*="etsy.com/uk/listing"]`);
